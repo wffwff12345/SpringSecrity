@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,12 +34,13 @@ public class JwtTokenUtil {
     /**
      * 加密的key
      */
-    public static final String APP_SECRET_KEY = "secret";
+    private static final String APP_SECRET_KEY = "MDk4ZjZiY2Q0NjIxZDM3M2NhZGU0ZTgzMjYyN2I0ZjY";
 
     /**
      * 权限的声明key
      */
     private static final String ROLE_CLAIMS = "role";
+
 
     /**
      * 生成token
@@ -49,15 +53,14 @@ public class JwtTokenUtil {
 
         Map<String, Object> map = new HashMap<>();
         map.put(ROLE_CLAIMS, role);
-
         String token = Jwts
                 .builder()
                 .setSubject(username)
-                //.setClaims(map)
-               // .claim("username", username)
+                .setClaims(map)
+                .claim("username", username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(SignatureAlgorithm.HS256, APP_SECRET_KEY)
+                .signWith(SignatureAlgorithm.HS512, generalKey())
                 .compact();
         return TOKEN_PREFIX +token;
     }
@@ -70,7 +73,7 @@ public class JwtTokenUtil {
      * @return
      */
     public static String getUsername(String token) {
-        Claims claims = Jwts.parser().setSigningKey(APP_SECRET_KEY).parseClaimsJws(token).getBody();
+        Claims claims = Jwts.parser().setSigningKey(generalKey()).parseClaimsJws(token).getBody();
         return claims.get("username").toString();
     }
 
@@ -81,7 +84,7 @@ public class JwtTokenUtil {
      * @return
      */
     public static String getUserRole(String token) {
-        Claims claims = Jwts.parser().setSigningKey(APP_SECRET_KEY).parseClaimsJws(token).getBody();
+        Claims claims = Jwts.parser().setSigningKey(generalKey()).parseClaimsJws(token).getBody();
         return claims.get("rol").toString();
     }
 
@@ -93,14 +96,14 @@ public class JwtTokenUtil {
      * @return boolean
      */
     public static boolean isExpiration(String token) {
-        Claims claims = Jwts.parser().setSigningKey(APP_SECRET_KEY).parseClaimsJws(token).getBody();
+        Claims claims = Jwts.parser().setSigningKey(generalKey()).parseClaimsJws(token).getBody();
         return claims.getExpiration().before(new Date());
     }
 
 
     public boolean validateJwtToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(APP_SECRET_KEY).parseClaimsJws(authToken);
+            Jwts.parser().setSigningKey(generalKey()).parseClaimsJws(authToken);
             return true;
         } catch (SignatureException e) {
             log.error("Invalid JWT signature: {}", e.getMessage());
@@ -115,9 +118,13 @@ public class JwtTokenUtil {
         }
         return false;
     }
-
+    public static SecretKey generalKey() {
+        byte[] encodedKey = Base64.getEncoder().encode(APP_SECRET_KEY.getBytes());
+        SecretKey key = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
+        return key;
+    }
     public String getUsernameFromJwtToken(String token) {
-        return Jwts.parser().setSigningKey(APP_SECRET_KEY).parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parser().setSigningKey(generalKey()).parseClaimsJws(token).getBody().getSubject();
     }
 
 }

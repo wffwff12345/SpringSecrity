@@ -1,4 +1,5 @@
 package com.example.project.config;
+
 import com.example.project.filter.JwtRequestFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ import java.util.List;
 @Slf4j
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig  {
+public class SecurityConfig {
 
     @Autowired
     private AuthenticationConfiguration authenticationConfiguration;
@@ -45,7 +46,6 @@ public class SecurityConfig  {
 
     /**
      * 认证管理器，登录的时候参数会传给 authenticationManager
-     *
      */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -54,31 +54,31 @@ public class SecurityConfig  {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-             //关闭csrf
-             http.csrf().disable()
-                        // 允许跨域（也可以不允许，看具体需求）
+        //关闭csrf
+        http.csrf().disable()
+                // 允许跨域（也可以不允许，看具体需求）
                 .cors().and()
-                 //不通过Session获取SecurityContext
+                //不通过Session获取SecurityContext
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 // 配置路径是否需要认证
                 .authorizeHttpRequests()
                 // 对于登录接口 允许匿名访问
-                .requestMatchers(HttpMethod.POST,"/account/**")
-                        .permitAll()
+                .requestMatchers(HttpMethod.POST, "/account/**")
+                .permitAll()
                 // 配置权限
                 .requestMatchers("/test")
-                        .hasAuthority("admin")
+                .hasAuthority("admin")
                 // 除上面外的所有请求全部需要鉴权认证
                 .anyRequest()
-                        .authenticated()
-                        .and()
-                        .authenticationManager(authenticationManager(authenticationConfiguration))
-                        .sessionManagement()
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                        //此处为添加jwt过滤
-                        .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
-                ;
+                .authenticated()
+                .and()
+                .authenticationManager(authenticationManager(authenticationConfiguration))
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+                //此处为添加jwt过滤
+                .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+        ;
         http.headers().frameOptions().disable();
         return http.build();
 
@@ -86,19 +86,17 @@ public class SecurityConfig  {
 
 
     /**
-     *跨域资源配置
+     * 跨域资源配置
      */
     @Bean
-    public CorsConfigurationSource corsConfigurationSource()
-    {
+    public CorsConfigurationSource corsConfigurationSource() {
         final CorsConfiguration configuration = new CorsConfiguration();
 
-    //此处发现如果不加入自己的项目地址，会被拦截。
-    configuration.setAllowedOriginPatterns(List.of("http://localhost:8083"));
+        //此处发现如果不加入自己的项目地址，会被拦截。
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:9001"));
         configuration.setAllowedMethods(List.of("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"));
         configuration.setAllowedHeaders(List.of("Access-Control-Allow-Origin", "X-Requested-With", "Origin", "Content-Type", "Accept", "Authorization"));
         configuration.setAllowCredentials(true);
-
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 

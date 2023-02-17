@@ -1,19 +1,17 @@
 package com.example.project.controller;
 
 import com.example.project.util.JwtTokenUtil;
+import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
 
 
 @RestController
 public class accountController {
 
-
     @PostMapping("/account/login")
     public  String login(){
         // 如果认证没通过，提示
         // 认证通过返回jwt
-        //TODO 数据库验证用户账号逻辑  我懒没实现
-
         String jwt = JwtTokenUtil.createToken("admin","admin");
         System.out.println("JWT--------"+jwt);
         //放入请求头
