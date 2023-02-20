@@ -7,10 +7,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Configuration
 @Component
@@ -34,7 +31,7 @@ public class JwtTokenUtil {
     /**
      * 加密的key
      */
-    private static final String APP_SECRET_KEY = "MDk4ZjZiY2Q0NjIxZDM3M2NhZGU0ZTgzMjYyN2I0ZjY";
+    private static final String APP_SECRET_KEY = "MDk4ZjZiY2Q0NjIxZDM3M2NhZGU0ZTgzMjYyN2I0ZjY55";
 
     /**
      * 权限的声明key
@@ -55,11 +52,17 @@ public class JwtTokenUtil {
         map.put(ROLE_CLAIMS, role);
         String token = Jwts
                 .builder()
+                .setId(UUID.randomUUID().toString())
+                .setIssuedAt(new Date(System.currentTimeMillis()))  //签发时间
                 .setSubject(username)
+                .setSubject("system")  //说明
+                .setIssuer("cl") //签发者信息
+                .setAudience("app")  //接收用户
+                .setIssuedAt(new Date())
+                .compressWith(CompressionCodecs.GZIP)  //数据压缩方式
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .setClaims(map)
                 .claim("username", username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(SignatureAlgorithm.HS512, generalKey())
                 .compact();
         return TOKEN_PREFIX +token;

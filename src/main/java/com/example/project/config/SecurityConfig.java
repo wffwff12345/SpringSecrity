@@ -67,7 +67,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/account/**")
                 .permitAll()
                 // 配置权限
-                .requestMatchers("/test")
+                .requestMatchers(HttpMethod.GET, "/test")
                 .hasAuthority("admin")
                 // 除上面外的所有请求全部需要鉴权认证
                 .anyRequest()
