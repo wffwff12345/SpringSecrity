@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.project.mapper.MenuMapper">
+    <select id="selectPermsByUserId" resultType="string">
+        SELECT
+            d.perms
+        FROM
+            sys_user_role a LEFT JOIN sys_role b ON a.role_id=b.id
+                            LEFT JOIN sys_role_menu c ON b.id = c.role_id
+                            LEFT JOIN sys_menu d  ON c.menu_id = d.id
+        WHERE a.user_id = #{id} AND
+            b.status = 0 AND
+            d.status = 0
+    </select>
+</mapper>
